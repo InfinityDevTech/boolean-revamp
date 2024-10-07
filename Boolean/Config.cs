@@ -27,7 +27,7 @@ public class Config
                                             "Once completed, you may review our [issues](https://github.com/conaticusgrp/boolean/issues) and choose whichever task you are interested in.";
         
         public static string WelcomeMsg(string userDisplay, string serverName) =>
-            $"Hello {userDisplay}, thank you for joining the **{serverName}** server!";
+            $"Whats up {userDisplay} you skibidi sigma, thank you for joining this hell hole called **{serverName}**.";
     }
     
     // Each represents the unicode for that emoji

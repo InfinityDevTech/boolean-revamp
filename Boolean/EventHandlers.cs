@@ -78,31 +78,7 @@ public class EventHandlers(
            Color = EmbedColors.Fail,
        }.Build(), ephemeral: true);
    }
-   
-   public async Task UserJoined(IGuildUser user)
-   {
-       if (user.IsBot)
-           return;
-       
-       // We can't pass in data context to the class because EventHandlers is a singleton and data context is scoped
-       var db = serviceProvider.GetRequiredService<DataContext>();
-       
-       var guild = await db.Guilds.FirstOrDefaultAsync(g => g.Snowflake == user.Guild.Id);
-       if (guild?.JoinRoleSnowflake != null) 
-           await user.AddRoleAsync(guild.JoinRoleSnowflake ?? 0);
-       
-       var dbWelcomeChannel = await SpecialChannelTools.GetSpecialChannel(db, user.Guild.Id, SpecialChannelType.Welcome);
-       if (dbWelcomeChannel == null)
-           return;
-       
-       var welcomeChannel = await user.Guild.GetChannelAsync(dbWelcomeChannel.Snowflake) as IMessageChannel;
-       await welcomeChannel?.SendMessageAsync(text: user.Mention, embed: new EmbedBuilder
-       {
-           Description = Config.Strings.WelcomeMsg(user.DisplayName, user.Guild.Name),
-           Color = EmbedColors.Normal,
-       }.Build())!;
-   }
-   
+
    public async Task ReactionAdded(Cacheable<IUserMessage, ulong> cachedMessage,
        Cacheable<IMessageChannel, ulong> originChannel, SocketReaction reaction)
    {
@@ -205,5 +181,28 @@ public class EventHandlers(
        
        starReaction.ReactionCount--;
        await db.SaveChangesAsync();
+   }
+
+   public async Task UserJoined(IGuildUser user)
+   {
+       // We can't pass in data context to the class because EventHandlers is a singleton and data context is scoped
+       // Whoever wrote this above is actually a nerd. 🤓👆
+       var db = serviceProvider.GetRequiredService<DataContext>();
+
+       var guild = await db.Guilds.FirstOrDefaultAsync(g => g.Snowflake == user.Guild.Id);
+       // Gotta add it, i mean, the guy needs a role.
+       if (guild?.JoinRoleSnowflake != null) await user.AddRoleAsync(guild.JoinRoleSnowflake ?? 0);
+
+       // I bet its a special channel.
+       var dbWelcomeChannel = await SpecialChannelTools.GetSpecialChannel(db, user.Guild.Id, SpecialChannelType.Welcome);
+       if (dbWelcomeChannel == null) return;
+
+       // Get the channel and send this epic skibidi message!
+       var welcomeChannel = await user.Guild.GetChannelAsync(dbWelcomeChannel.Snowflake) as IMessageChannel;
+       await welcomeChannel?.SendMessageAsync(text: user.Mention, embed: new EmbedBuilder
+       {
+           Description = Config.Strings.WelcomeMsg(user.DisplayName, user.Guild.Name),
+           Color = EmbedColors.Normal,
+       }.Build())!;
    }
 }
